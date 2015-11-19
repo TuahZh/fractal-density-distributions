@@ -73,22 +73,20 @@ for ix in range(ngrid):
 
 rho_fft = np.sqrt(powerspec)
 
-print "FFT: ",fft(rho_fft)
-
 phases = j*2.0*np.pi*np.random.random(ngrid)
 phases = np.exp(phases)
 
 rho_fft = rho_fft*phases
             
 # Compute the inverse fourier transform of rho_fft
-# TODO - what is the appropriate 3D function?
+
 rho = ifft(rho_fft)
 
 print "x: ", x
 print "rho: ", rho
 # Scale density by rhozero
 
-rho = np.exp(rho/rhozero)
+rho = np.real(np.exp(rho/rhozero))
 
 print "rho scaled: ", rho
 
