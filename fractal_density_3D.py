@@ -166,12 +166,9 @@ f_obj.write(line+'\n')
 # xcell ycell zcell dx dy dz rho  (x,y,z co-ordinates being initial cell face)
 
 for ix in range(ngrid):
-    x = ix*dr
     for iy in range(ngrid):
-        y = iy*dr
         for iz in range(ngrid):
-            z = iz*dr
-            line = str(x) + ' ' + str(y) + ' ' + str(z) + ' ' + str(dr) + ' ' + str(dr)+ ' ' + str(dr) +' ' +str(rho[ix,iy,iz])
+            line = str(x[ix]) + ' ' + str(y[iy]) + ' ' + str(z[iz]) + ' ' + str(dr) + ' ' + str(dr)+ ' ' + str(dr) +' ' +str(rho[ix,iy,iz])
             f_obj.write(line+'\n')
 
 print "File Write Complete"
