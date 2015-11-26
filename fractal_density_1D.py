@@ -131,15 +131,16 @@ fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
 n, bins, patches = ax3.hist(rhotest, bins = ngrid)
 
-histmax = np.amax(n)
-yfit = normpdf(bins, mu,sigma)
-
-ymax = np.amax(yfit)
+# Construct a lognormal PDF with the fitted parameters 
+rhofit = normpdf(bins, mu,sigma)
 
 # Scale the normal distribution to fit
-yfit = histmax*yfit/ymax
+histmax = np.amax(n)
+fitmax = np.amax(rhofit)
 
-ax3.plot(bins, yfit)
+rhofit = histmax*rhofit/fitmax
+
+ax3.plot(bins, rhofit)
 ax3.set_xlabel(r'log $\frac{\rho}{\bar{\rho}}$', fontsize = 16)
 ax3.set_ylabel(r'PDF', fontsize = 16)
 plt.show()

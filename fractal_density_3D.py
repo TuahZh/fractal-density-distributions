@@ -132,14 +132,16 @@ fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
 n, bins, patches = ax3.hist(rhotest, bins = ngrid)
 
-histmax = np.amax(n)
-yfit = normpdf(bins, mu,sigma)
+# Construct a lognormal PDF with the fitted parameters 
+rhofit = normpdf(bins, mu,sigma)
 
-ymax = np.amax(yfit)
 # Scale the normal distribution to fit
-yfit = histmax*yfit/ymax
+histmax = np.amax(n)
+fitmax = np.amax(rhofit)
 
-ax3.plot(bins, yfit)
+rhofit = histmax*rhofit/fitmax
+
+ax3.plot(bins, rhofit)
 ax3.set_xlabel(r'log $\frac{\rho}{\bar{\rho}}$', fontsize = 16)
 ax3.set_ylabel(r'PDF', fontsize = 16)
 plt.show()
@@ -161,7 +163,7 @@ line = str(ngrid)+' '+str(ngrid)+ ' ' +str(ngrid)
 f_obj.write(line+'\n')
 
 # Now write in format
-# xcell ycell zcell rho  (x,y,z co-ordinates being leftward cell face)
+# xcell ycell zcell dx dy dz rho  (x,y,z co-ordinates being initial cell face)
 
 for ix in range(ngrid):
     x = ix*dr
@@ -169,7 +171,7 @@ for ix in range(ngrid):
         y = iy*dr
         for iz in range(ngrid):
             z = iz*dr
-            line = str(x) + ' ' + str(y) + ' ' + str(z) + ' ' + str(rho[ix,iy,iz])
+            line = str(x) + ' ' + str(y) + ' ' + str(z) + ' ' + str(dr) + ' ' + str(dr)+ ' ' + str(dr) +' ' +str(rho[ix,iy,iz])
             f_obj.write(line+'\n')
 
-print "File Write Complete"  
+print "File Write Complete"
