@@ -37,7 +37,7 @@ def readInputs_Cube():
     # Grid size and dimensions
 
     ngrid = input("How many grid cells per dimension? ")
-    boxlength = input("What is the box length (in pc)? ")        
+    boxlength = input("What is the box half-length (i.e. [-L,L])? ")        
     
     # Output filename
 
@@ -59,8 +59,8 @@ def readInputs_Cuboid():
     
     ngrid = input("How many grid cells per dimension? ")
     xlength = input("x box half-length ([-L,L]): ")
-    ylength = input("y box length: ")
-    zlength = input("z box length: ")        
+    ylength = input("y box half-length: ")
+    zlength = input("z box half-length: ")        
             
     # Output filename
 
@@ -298,4 +298,26 @@ def writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename):
 
     print "File Write Complete"
     
+def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,filename):
+    
+    print "--"
+    print "Writing cubic grid to file ", filename
+    f_obj = open(filename, 'w')
+
+    # First write number of x, y and z cells to header
+
+    line = str(ngridx)+' '+str(ngridy)+ ' ' +str(ngridz) 
+
+    f_obj.write(line+'\n')
+
+    # Now write in format
+    # xcell ycell zcell dx dy dz rho  (x,y,z co-ordinates being initial cell face)
+
+    for ix in range(ngridx):
+        for iy in range(ngridy):
+            for iz in range(ngridz):
+                line = str(x[ix]) + ' ' + str(y[iy]) + ' ' + str(z[iz]) + ' ' + str(dx) + ' ' + str(dy)+ ' ' + str(dz) +' ' +str(rho[ix,iy,iz])
+                f_obj.write(line+'\n')
+
+    print "File Write Complete"
     
