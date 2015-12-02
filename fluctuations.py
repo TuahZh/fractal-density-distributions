@@ -3,7 +3,7 @@
 
 import numpy as np
 from datetime import datetime
-from scipy.fftpack import ifftn
+from scipy.fftpack import ifft, ifftn
 from scipy.stats import norm
 from matplotlib.mlab import normpdf
 import matplotlib.pyplot as plt
@@ -37,7 +37,7 @@ def readInputs_Cube():
     # Grid size and dimensions
 
     ngrid = input("How many grid cells per dimension? ")
-    boxlength = input("What is the box length (in pc)? ")
+    boxlength = input("What is the box length (in pc)? ")        
     
     # Output filename
 
@@ -49,8 +49,7 @@ def readInputs_Cube():
     
     print "--"
 
-    return fractalD, npower, rhozero, seed, ngrid, boxlength,filename
-
+    return fractalD, npower, rhozero, seed, ngrid, boxlength, filename
 
 def readInputs_Cuboid():
     
@@ -59,15 +58,10 @@ def readInputs_Cuboid():
     # Grid size and dimensions
     
     ngrid = input("How many grid cells per dimension? ")
-    xmin = input("Minimum x co-ordinate")
-    xmax = input("Maximum x co-ordinate")
-    
-    ymin = input("Minimum y co-ordinate")
-    ymax = input("Maximum y co-ordinate")
-    
-    zmin = input("Minimum z co-ordinate")
-    zmax = input("Maximum z co-ordinate")
-    
+    xlength = input("x box half-length ([-L,L]): ")
+    ylength = input("y box length: ")
+    zlength = input("z box length: ")        
+            
     # Output filename
 
 
@@ -79,10 +73,87 @@ def readInputs_Cuboid():
     
     print "--"
     
-    return fractalD,npower,rhozero,seed,ngrid,xmin,xmax,ymin,ymax,zmin,zmax,filename
+    return fractalD,npower,rhozero,seed,ngrid,xlength,ylength,zlength,filename
 
+
+def create1DGrid(ngrid,boxlength):
+    dr = 2.0*boxlength/float(ngrid)
+    
+    print "Defining 1D Grid"
+    print "Boxlength: ", boxlength
+    print "Cell Size: ", dr
+            
+    x = np.zeros(ngrid)    
+    
+    for ix in range(ngrid):
+        x[ix] = -boxlength + ix*dr
+                    
+    print '--'
+    return x, dr 
+
+    
+
+def createCube(ngrid,boxlength):
+    '''Create a cubic grid'''
+    
+    dr = 2.0*boxlength/float(ngrid)
+    
+    print "Defining Cubic Grid"
+    print "Boxlength: ", boxlength
+    print "Cell Size: ", dr
+            
+    x = np.zeros(ngrid)
+    y = np.zeros(ngrid)
+    z = np.zeros(ngrid)
+    
+    for ix in range(ngrid):
+        x[ix] = -boxlength + ix*dr
+        y[ix] = x[ix]
+        z[ix] = x[ix]
+                    
+    print '--'
+    return x,y,z,dr 
+
+def createCuboid(ngridx,ngridy,ngridz,xlength,ylength,zlength):
+    '''Create a cuboid grid '''
+    
+    dx = 2.0*xlength/float(ngridx)
+    dy = 2.0*ylength/float(ngridy)
+    dz = 2.0*zlength/float(ngridz)
+    
+    print "Defining Cuboid Grid"
+    print "Boxlengths: ", xlength, ylength, zlength
+    print "Cell Sizes: ", dx,dy,dz
+    
+    x = np.zeros(ngridx)
+    y = np.zeros(ngridy)
+    z = np.zeros(ngridz)
+    
+    for ix in range(ngridx):        
+        x[ix] = -xlength + ix*dx
+        
+    for iy in range(ngridy):
+        y[iy] = -ylength + iy*dy
+        
+    for iz in range(ngridz):
+        z[iz] = -zlength + iz*dz
+    
+    print '--'
+    return x,y,z,dx,dy,dz
 
 def constructWavenumbers(ngrid,boxlength,dr):
+    '''Construct wavenumbers so that they can be used in inverse FFT routines'''
+    
+    print "Constructing Wavenumbers: "
+    print "Length of array: ",ngrid
+    print "Maximum Scale: ", boxlength
+    print "Minimum Scale: ", dr
+    
+    # Construct k such that it can be correctly fed into ifftn   
+    # k[0] = zero frequency
+    # k[1:ngrid/2+1] = positive frequencies (ascending)
+    # k[ngrid/2+1:-1] = negative frequencies (decreasingly negative)
+
     
     k = np.zeros(ngrid)
     k[0] = 0.0
@@ -97,8 +168,26 @@ def constructWavenumbers(ngrid,boxlength,dr):
     for ix in range(1,ngrid/2):
         k[ngrid/2+ix] = -k[ngrid/2-ix]
     
+    print '--'
     return k
 
+def computePowerLawPowerSpectrum(npower,ngridx,ngridy,ngridz, kx,ky,kz):
+    '''Compute a power spectrum in 3D which is a simple power law'''
+    
+    
+    print "Computing 3D Power Law Power Spectrum, index: ",npower
+    
+    powerspec = np.zeros((ngridx,ngridy,ngridz))
+
+    for ix in range(1,ngridx):
+        for iy in range(1,ngridy):
+            for iz in range(1,ngridz):
+            
+                kmag= np.sqrt(kx[ix]*kx[ix]+ ky[iy]*ky[iy] + kz[iz]*kz[iz])
+                powerspec[ix,iy,iz] = np.power(kmag,-npower)
+
+    print '--'
+    return powerspec
 
 def PowerSpectrumToFT(seed, powerspec):
     '''Generates Fourier Transform of a function given its power spectrum
@@ -107,6 +196,9 @@ def PowerSpectrumToFT(seed, powerspec):
     
     # The power spectrum has no phase data - must generate it before Fourier Transform
     # Use random phases to reconstruct the Fourier Transform of the density
+
+    print "Generating Fourier Transform from Power Spectrum"
+    print "Populating Random Fourier phases, with number seed ",seed
 
     ft = np.sqrt(powerspec)
 
@@ -121,8 +213,18 @@ def PowerSpectrumToFT(seed, powerspec):
     
     return ft
 
+
 def InverseFFT(ft):
     '''Wrapper function to return Inverse FFT'''
+    
+    print "Performing Inverse FFT"
+    return ifft(ft)
+    
+
+def InverseFFTN(ft):
+    '''Wrapper function to return Inverse FFT'''
+    
+    print "Performing Inverse multidimensional FFT"
     return ifftn(ft)
     
     
@@ -158,5 +260,27 @@ def testForLognormalPDF(rho, ngrid):
     ax3.set_ylabel(r'PDF', fontsize = 16)
     plt.show()
 
+def writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename):
+    
+    print "--"
+    print "Writing cubic grid to file ", filename
+    f_obj = open(filename, 'w')
+
+    # First write number of x, y and z cells to header
+
+    line = str(ngrid)+' '+str(ngrid)+ ' ' +str(ngrid) 
+
+    f_obj.write(line+'\n')
+
+    # Now write in format
+    # xcell ycell zcell dx dy dz rho  (x,y,z co-ordinates being initial cell face)
+
+    for ix in range(ngrid):
+        for iy in range(ngrid):
+            for iz in range(ngrid):
+                line = str(x[ix]) + ' ' + str(y[iy]) + ' ' + str(z[iz]) + ' ' + str(dr) + ' ' + str(dr)+ ' ' + str(dr) +' ' +str(rho[ix,iy,iz])
+                f_obj.write(line+'\n')
+
+    print "File Write Complete"
     
     
