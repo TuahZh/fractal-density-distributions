@@ -171,10 +171,25 @@ def constructWavenumbers(ngrid,boxlength,dr):
     print '--'
     return k
 
+def compute1DPowerLawPowerSpectrum(npower,ngrid, k):
+    '''Compute a power spectrum in 3D which is a simple power law'''
+        
+    print "Computing 1D Power Law Power Spectrum, index: ",npower
+    
+    powerspec = np.zeros(ngrid)
+
+    for ix in range(ngrid):
+        kmag= np.sqrt(k[ix]*k[ix])      
+    
+        if(kmag==0.0): powerspec[ix]=0.0
+        else: powerspec[ix] = np.power(kmag,-npower)
+    
+    return powerspec
+
+
 def computePowerLawPowerSpectrum(npower,ngridx,ngridy,ngridz, kx,ky,kz):
     '''Compute a power spectrum in 3D which is a simple power law'''
-    
-    
+        
     print "Computing 3D Power Law Power Spectrum, index: ",npower
     
     powerspec = np.zeros((ngridx,ngridy,ngridz))
@@ -228,7 +243,7 @@ def InverseFFTN(ft):
     return ifftn(ft)
     
     
-def testForLognormalPDF(rho, ngrid):
+def testForLognormalPDF(rho, nbins):
     '''Tests a density grid's PDF for lognormality'''
     
     meanrho = np.mean(rho.flatten())
@@ -240,7 +255,7 @@ def testForLognormalPDF(rho, ngrid):
 
     fig3 = plt.figure()
     ax3 = fig3.add_subplot(111)
-    n, bins, patches= ax3.hist(rhotest, bins = ngrid)
+    n, bins, patches= ax3.hist(rhotest, bins = nbins)
 
     # Construct a lognormal PDF with the fitted parameters 
     rhofit = normpdf(bins, mu,sigma)

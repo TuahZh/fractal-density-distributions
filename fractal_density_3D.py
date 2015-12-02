@@ -3,7 +3,7 @@
 # Taken from Walch et al, arXiv:1109.3478
 
 import numpy as np
-import fluctuations as fl
+import fractalmodule as fr
 
 # Read in input data:
 
@@ -13,25 +13,25 @@ import fluctuations as fl
 # boxlength - Half length of box in code units (e.g. dimensions (-L,L))
 # filename - output filename
 
-fractalD, npower, rhozero, seed, ngrid, boxlength, filename = fl.readInputs_Cube()
+fractalD, npower, rhozero, seed, ngrid, boxlength, filename = fr.readInputs_Cube()
 
 # Define the cubic Grid
-x,y,z,dr = fl.createCube(ngrid, boxlength)
+x,y,z,dr = fr.createCube(ngrid, boxlength)
 
 # Create Wavenumbers
-k = fl.constructWavenumbers(ngrid, boxlength, dr)
+k = fr.constructWavenumbers(ngrid, boxlength, dr)
 
 # Compute a 3D power spectrum (power law k^-npower)
-powerspec = fl.computePowerLawPowerSpectrum(npower, ngrid, ngrid, ngrid, k, k, k)
+powerspec = fr.computePowerLawPowerSpectrum(npower, ngrid, ngrid, ngrid, k, k, k)
 
 # The power spectrum has no phase data - must generate it before Fourier Transform
 # Use random phases to reconstruct the Fourier Transform of the density
 
-rho_fft = fl.PowerSpectrumToFT(seed, powerspec)
+rho_fft = fr.PowerSpectrumToFT(seed, powerspec)
             
 # Compute the inverse fourier transform of rho_fft
 
-rho = fl.InverseFFTN(rho_fft)
+rho = fr.InverseFFTN(rho_fft)
 
 # Scale density by rhozero
 
@@ -41,9 +41,9 @@ rho = np.real(rho)
 rho = np.real(np.exp(rho/rhozero))
 
 # Test the density to check its PDF is lognormal (optional - feel free to comment out)
-fl.testForLognormalPDF(rho, ngrid)
+fr.testForLognormalPDF(rho, ngrid)
 
 # Write density grid to file
 
-fl.writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename)
+fr.writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename)
 
