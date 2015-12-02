@@ -23,11 +23,11 @@ npower = 2.0*(3.0-fractalD)+2
 print "Fractal Dimension is ", fractalD
 print "This corresponds to a power law power spectrum in k-space with index ",npower
 
-rhozero = input("What is rhozero?")
+rhozero = input("What is rhozero? ")
 
 # Grid size and dimensions
 
-ngrid = input("How many grid cells are required?")
+ngrid = input("How many grid cells are required? ")
 boxlength = input("What is the box length (in pc)? ")
 
 try:
@@ -45,7 +45,14 @@ j = np.complex(0,1.0) # imaginary number
 
 # Output filename
 
+
 filename = raw_input("What is the output filename? ")
+
+if filename=='':
+    filename = 'grid.dat'
+    print "No filename read: setting to default filename ",filename
+    
+print "--"
 
 # Construct wavenumbers
 
@@ -81,6 +88,7 @@ for ix in range(1,ngrid/2+1):
 for ix in range(1,ngrid/2):
     k[ngrid/2+ix] = -k[ngrid/2-ix]
 
+
 # Construct Power Spectrum
 
 print '--'
@@ -115,14 +123,19 @@ print "--"
 print "Carrying out Inverse FFT"
 rho = ifftn(rho_fft)
 
-
 # Scale density by rhozero
 
 print "Scaling Density"
+
+rho = np.real(rho)
+
+print rho/rhozero
 rho = np.real(np.exp(rho/rhozero))
 
 meanrho = np.mean(rho.flatten())
-rhotest = np.log10(rho.flatten()/meanrho)
+
+print 'Mean density: ', meanrho
+rhotest = np.log(rho.flatten()/meanrho)
 
 (mu,sigma) = norm.fit(rhotest)
 
@@ -130,17 +143,18 @@ rhotest = np.log10(rho.flatten()/meanrho)
 
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
-n, bins, patches = ax3.hist(rhotest, bins = ngrid)
+rhobin, bins, patches = ax3.hist(rhotest, bins = ngrid)
 
 # Construct a lognormal PDF with the fitted parameters 
 rhofit = normpdf(bins, mu,sigma)
 
 # Scale the normal distribution to fit
-histmax = np.amax(n)
+histmax = np.amax(rhobin)
 fitmax = np.amax(rhofit)
 
 rhofit = histmax*rhofit/fitmax
 
+ax3.plot(bins[1:],rhobin)
 ax3.plot(bins, rhofit)
 ax3.set_xlabel(r'log $\frac{\rho}{\bar{\rho}}$', fontsize = 16)
 ax3.set_ylabel(r'PDF', fontsize = 16)
