@@ -40,7 +40,7 @@ def readInputs():
                 
     densunit = massunit/(distunit*distunit*distunit)
     
-    print "In cgs, this density is : ", rhozero*densunit, " cm m^-3"
+    print "In cgs, this density is : ", rhozero*densunit, " g cm^-3"
     print "In SI, this density is : ", 1000.0*rhozero*densunit, " kg m^-3"
     
     try:
@@ -299,7 +299,7 @@ def testForLognormalPDF(rho, nbins):
     plt.show()
 
     
-def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,massunit,distunit,filename):
+def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,massunit,distunit,masskey,distkey,filename):
     
     print "--"
     print "Writing grid to file ", filename
@@ -307,7 +307,7 @@ def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,massunit,distu
 
     # First write number of x, y and z cells to header
 
-    line = str(ngridx)+' '+str(ngridy)+ ' ' +str(ngridz) + ' ' + str(massunit) + ' ' + str(distunit)
+    line = str(ngridx)+' '+str(ngridy)+ ' ' +str(ngridz) + ' ' + str(massunit) + ' ' + str(distunit) + ' ' + masskey +' ' + distkey
 
     f_obj.write(line+'\n')
 
@@ -322,8 +322,8 @@ def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,massunit,distu
 
     print "File Write Complete"
     
-def writeCubicGridToFile(x,y,z,ngrid,rho,dr,massunit,distunit,filename):
+def writeCubicGridToFile(x,y,z,ngrid,rho,dr,massunit,distunit,masskey,distkey,filename):
     
-    writeCuboidGridToFile(x, y, z, ngrid, ngrid, ngrid, rho, dr, dr, dr, massunit, distunit, filename)
+    writeCuboidGridToFile(x, y, z, ngrid, ngrid, ngrid, rho, dr, dr, dr, massunit, distunit, masskey, distkey, filename)
 
     

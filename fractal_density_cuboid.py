@@ -51,5 +51,5 @@ fr.testForLognormalPDF(rho, ngrid)
 
 # Write density grid to file
 
-fr.writeCuboidGridToFile(x,y,z,ngrid,ngrid,ngrid,rho,dx,dy,dz,massunit,distunit,filename)
+fr.writeCuboidGridToFile(x,y,z,ngrid,ngrid,ngrid,rho,dx,dy,dz,massunit,distunit,masskey,distkey,filename)
 
