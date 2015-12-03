@@ -7,19 +7,28 @@ import fractalmodule as fr
 
 # Read in input data:
 
+print "-----"
+print "FRACTAL DENSITY DISTRIBUTION IN A 3D CUBE"
+print "-----"
+
+
 # fractalD - fractal dimension
-# rhozero - density scaling parameter
+# deltarho - strength of density fluctuations
+# rhozero - Mean density in the box
 # ngrid - Number of grid cells per dimension (i.e. total ngrid^3)
 # boxlength - Half length of box in code units (e.g. dimensions (-L,L))
+# seed - random number seed
+# masskey, massunit - string describing mass unit, value
+# distkey, distunit - string describing distance unit, value
 # filename - output filename
 
-fractalD, npower, rhozero, seed, ngrid, boxlength, filename = fr.readInputs_Cube()
+fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit,ngrid, boxlength, filename = fr.readInputs_Cube()
 
 # Define the cubic Grid
-x,y,z,dr = fr.createCube(ngrid, boxlength)
+x,y,z,dr = fr.createCube(ngrid, boxlength,distkey)
 
 # Create Wavenumbers
-k = fr.constructWavenumbers(ngrid, boxlength, dr)
+k = fr.constructWavenumbers(ngrid, boxlength, dr, distkey)
 
 # Compute a 3D power spectrum (power law k^-npower)
 powerspec = fr.computePowerLawPowerSpectrum(npower, ngrid, ngrid, ngrid, k, k, k)
@@ -38,12 +47,12 @@ rho = fr.InverseFFTN(rho_fft)
 print "Scaling Density"
 
 rho = np.real(rho)
-rho = np.real(np.exp(rho/rhozero))
+rho = rhozero*np.real(np.exp(rho*deltarho))
 
 # Test the density to check its PDF is lognormal (optional - feel free to comment out)
 fr.testForLognormalPDF(rho, ngrid)
 
 # Write density grid to file
 
-fr.writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename)
+fr.writeCubicGridToFile(x,y,z,ngrid,rho,dr,massunit,distunit,filename)
 

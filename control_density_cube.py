@@ -6,31 +6,31 @@ import fractalmodule as fr
 
 # Read in input data:
 
+print "-----"
+print "UNIFORM DENSITY DISTRIBUTION IN A 3D CUBE"
+print "(control for fractal simulations)"
+print "-----"
+
 # fractalD - fractal dimension
 # rhozero - density scaling parameter
 # ngrid - Number of grid cells per dimension (i.e. total ngrid^3)
 # boxlength - Half length of box in code units (e.g. dimensions (-L,L))
 # filename - output filename
 
-ngrid = input("How many grid cells per dimension? ")
-boxlength = input("What is the box length (i.e. [-L,L])? ")
-
-filename =  raw_input("What is the output filename? ")
-
-if filename=='':
-    filename = 'grid.dat'
-    print "No filename read: setting to default filename ",filename
-    
-print "--"
+fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit,ngrid, boxlength, filename = fr.readInputs_Cube()
 
 # Define the cubic Grid
-x,y,z,dr = fr.createCube(ngrid, boxlength)
+x,y,z,dr = fr.createCube(ngrid, boxlength,distkey)
 
-rho = np.zeros(ngrid,ngrid,ngrid)
+print "***"
+print "***This script produces a control cube of uniform density: ignoring fractal calculations***"
+print "***"
+
+rho = np.zeros((ngrid,ngrid,ngrid))
 
 rho[:,:,:] = 1.0
 
 # Write density grid to file
 
-fr.writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename)
+fr.writeCubicGridToFile(x,y,z,ngrid,rho,dr,massunit,distunit,filename)
 

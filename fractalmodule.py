@@ -8,6 +8,11 @@ from scipy.stats import norm
 from matplotlib.mlab import normpdf
 import matplotlib.pyplot as plt
 
+distkeys = ['','AU','pc','cm','m']
+masskeys = ['','Msol','g','kg']
+
+distances = {'AU':1.496e13, 'pc':3.086e18, 'cm':1.0, 'm':100.0}
+masses = {'Msol':1.99e33, 'g':1.0, 'kg':1000.0}
 
 def readInputs():
     '''Reads input data common to any fractal density calculation'''
@@ -18,7 +23,25 @@ def readInputs():
     print "Fractal Dimension is ", fractalD
     print "This corresponds to a power law power spectrum in k-space with index ",npower
 
-    rhozero = input("What is rhozero? ")
+    distchoice = input("What is the unit of distance? (1=AU, 2=pc, 3=cm, 4=m)")
+    distkey = distkeys[distchoice]    
+    distunit = distances[distkey]
+    
+    print "Distance unit "+str(distkey)+" selected"
+            
+    masschoice = input("What is the unit of mass? (1=Msol, 2=g = 3=kg)")
+    masskey = masskeys[masschoice]
+    massunit = masses[masskey]
+    
+    print "Mass unit "+str(masskey)+" selected"
+    
+    deltarho = input("What is deltarho (parameter describing the strength of density fluctuations)? ")
+    rhozero = input("What is the mean density (in "+masskey+" "+distkey+"^-3)? ")
+                
+    densunit = massunit/(distunit*distunit*distunit)
+    
+    print "In cgs, this density is : ", rhozero*densunit, " cm m^-3"
+    print "In SI, this density is : ", 1000.0*rhozero*densunit, " kg m^-3"
     
     try:
         seed = input("Input a random number seed, or press enter to generate it from system clock: ")
@@ -28,16 +51,16 @@ def readInputs():
         seed = np.int(date.hour + date.minute + date.second + date.day + date.month + date.year)
         print "Seed is ", seed
     
-    return fractalD,npower,rhozero,seed
+    return fractalD,npower,deltarho, rhozero,seed, distkey, distunit, masskey, massunit
 
 def readInputs_Cube():
         
-    fractalD, npower, rhozero,seed = readInputs()
+    fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit = readInputs()
 
     # Grid size and dimensions
 
     ngrid = input("How many grid cells per dimension? ")
-    boxlength = input("What is the box half-length (i.e. [-L,L])? ")        
+    boxlength = input("What is the box half-length (i.e. [-L,L]) in "+str(distkey)+"? ")        
     
     # Output filename
 
@@ -49,18 +72,18 @@ def readInputs_Cube():
     
     print "--"
 
-    return fractalD, npower, rhozero, seed, ngrid, boxlength, filename
+    return fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit,ngrid, boxlength, filename
 
 def readInputs_Cuboid():
     
-    fractalD, npower, rhozero,seed = readInputs()
+    fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit = readInputs()
     
     # Grid size and dimensions
     
     ngrid = input("How many grid cells per dimension? ")
-    xlength = input("x box half-length ([-L,L]): ")
-    ylength = input("y box half-length: ")
-    zlength = input("z box half-length: ")        
+    xlength = input("x box half-length ([-L,L]) in "+str(distkey)+": ")
+    ylength = input("y box half-length in "+str(distkey)+": ")
+    zlength = input("z box half-length in "+str(distkey)+": ")        
             
     # Output filename
 
@@ -73,7 +96,7 @@ def readInputs_Cuboid():
     
     print "--"
     
-    return fractalD,npower,rhozero,seed,ngrid,xlength,ylength,zlength,filename
+    return fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit, ngrid, xlength, ylength, zlength, filename
 
 
 def create1DGrid(ngrid,boxlength):
@@ -93,14 +116,14 @@ def create1DGrid(ngrid,boxlength):
 
     
 
-def createCube(ngrid,boxlength):
+def createCube(ngrid,boxlength,distkey):
     '''Create a cubic grid'''
     
     dr = 2.0*boxlength/float(ngrid)
     
     print "Defining Cubic Grid"
-    print "Boxlength: ", boxlength
-    print "Cell Size: ", dr
+    print "Boxlength: ", boxlength, " "+distkey
+    print "Cell Size: ", dr," "+distkey
             
     x = np.zeros(ngrid)
     y = np.zeros(ngrid)
@@ -114,7 +137,7 @@ def createCube(ngrid,boxlength):
     print '--'
     return x,y,z,dr 
 
-def createCuboid(ngridx,ngridy,ngridz,xlength,ylength,zlength):
+def createCuboid(ngridx,ngridy,ngridz,xlength,ylength,zlength,distkey):
     '''Create a cuboid grid '''
     
     dx = 2.0*xlength/float(ngridx)
@@ -122,8 +145,8 @@ def createCuboid(ngridx,ngridy,ngridz,xlength,ylength,zlength):
     dz = 2.0*zlength/float(ngridz)
     
     print "Defining Cuboid Grid"
-    print "Boxlengths: ", xlength, ylength, zlength
-    print "Cell Sizes: ", dx,dy,dz
+    print "Boxlengths ("+distkey+"): ", xlength, ylength, zlength
+    print "Cell Sizes ("+distkey+"): ", dx,dy,dz
     
     x = np.zeros(ngridx)
     y = np.zeros(ngridy)
@@ -141,13 +164,13 @@ def createCuboid(ngridx,ngridy,ngridz,xlength,ylength,zlength):
     print '--'
     return x,y,z,dx,dy,dz
 
-def constructWavenumbers(ngrid,boxlength,dr):
+def constructWavenumbers(ngrid,boxlength,dr,distkey):
     '''Construct wavenumbers so that they can be used in inverse FFT routines'''
     
     print "Constructing Wavenumbers: "
     print "Length of array: ",ngrid
-    print "Maximum Scale: ", boxlength
-    print "Minimum Scale: ", dr
+    print "Maximum Scale: ", boxlength, " ",distkey
+    print "Minimum Scale: ", dr, " ",distkey
     
     # Construct k such that it can be correctly fed into ifftn   
     # k[0] = zero frequency
@@ -275,38 +298,16 @@ def testForLognormalPDF(rho, nbins):
     ax3.set_ylabel(r'PDF', fontsize = 16)
     plt.show()
 
-def writeCubicGridToFile(x,y,z,ngrid,rho,dr,filename):
+    
+def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,massunit,distunit,filename):
     
     print "--"
-    print "Writing cubic grid to file ", filename
+    print "Writing grid to file ", filename
     f_obj = open(filename, 'w')
 
     # First write number of x, y and z cells to header
 
-    line = str(ngrid)+' '+str(ngrid)+ ' ' +str(ngrid) 
-
-    f_obj.write(line+'\n')
-
-    # Now write in format
-    # xcell ycell zcell dx dy dz rho  (x,y,z co-ordinates being initial cell face)
-
-    for ix in range(ngrid):
-        for iy in range(ngrid):
-            for iz in range(ngrid):
-                line = str(x[ix]) + ' ' + str(y[iy]) + ' ' + str(z[iz]) + ' ' + str(dr) + ' ' + str(dr)+ ' ' + str(dr) +' ' +str(rho[ix,iy,iz])
-                f_obj.write(line+'\n')
-
-    print "File Write Complete"
-    
-def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,filename):
-    
-    print "--"
-    print "Writing cubic grid to file ", filename
-    f_obj = open(filename, 'w')
-
-    # First write number of x, y and z cells to header
-
-    line = str(ngridx)+' '+str(ngridy)+ ' ' +str(ngridz) 
+    line = str(ngridx)+' '+str(ngridy)+ ' ' +str(ngridz) + ' ' + str(massunit) + ' ' + str(distunit)
 
     f_obj.write(line+'\n')
 
@@ -320,4 +321,9 @@ def writeCuboidGridToFile(x,y,z,ngridx,ngridy,ngridz,rho,dx,dy,dz,filename):
                 f_obj.write(line+'\n')
 
     print "File Write Complete"
+    
+def writeCubicGridToFile(x,y,z,ngrid,rho,dr,massunit,distunit,filename):
+    
+    writeCuboidGridToFile(x, y, z, ngrid, ngrid, ngrid, rho, dr, dr, dr, massunit, distunit, filename)
+
     

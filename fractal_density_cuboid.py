@@ -7,21 +7,25 @@ import fractalmodule as fr
 
 # Read in input data:
 
+print "-----"
+print "FRACTAL DENSITY DISTRIBUTION IN A 3D CUBOID"
+print "-----"
+
 # fractalD - fractal dimension
 # rhozero - density scaling parameter
 # ngrid - Number of grid cells per dimension (i.e. total ngrid^3)
 # boxlength - Half length of box in code units (e.g. dimensions (-L,L))
 # filename - output filename
 
-fractalD,npower,rhozero,seed,ngrid,xlength,ylength,zlength,filename = fr.readInputs_Cuboid()
+fractalD, npower, deltarho, rhozero, seed, distkey, distunit, masskey, massunit, ngrid, xlength, ylength, zlength, filename = fr.readInputs_Cuboid()
 
-# Define the cubic Grid
-x,y,z,dx,dy,dz = fr.createCuboid(ngrid, ngrid, ngrid, xlength, ylength, zlength)
+# Define the cuboid Grid
+x,y,z,dx,dy,dz = fr.createCuboid(ngrid,ngrid,ngrid,xlength,ylength,zlength,distkey)
 
 # Create Wavenumbers
-kx = fr.constructWavenumbers(ngrid, xlength, dx)
-ky = fr.constructWavenumbers(ngrid, ylength, dy)
-kz = fr.constructWavenumbers(ngrid, zlength, dz)
+kx = fr.constructWavenumbers(ngrid, xlength, dx,distkey)
+ky = fr.constructWavenumbers(ngrid, ylength, dy,distkey)
+kz = fr.constructWavenumbers(ngrid, zlength, dz,distkey)
 
 # Compute a 3D power spectrum (power law k^-npower)
 powerspec = fr.computePowerLawPowerSpectrum(npower, ngrid, ngrid, ngrid, kx, ky, kz)
@@ -40,12 +44,12 @@ rho = fr.InverseFFTN(rho_fft)
 print "Scaling Density"
 
 rho = np.real(rho)
-rho = np.real(np.exp(rho/rhozero))
+rho = rhozero*np.real(np.exp(rho*deltarho))
 
 # Test the density to check its PDF is lognormal (optional - feel free to comment out)
 fr.testForLognormalPDF(rho, ngrid)
 
 # Write density grid to file
 
-fr.writeCuboidGridToFile(x,y,z,ngrid,ngrid,ngrid,rho,dx,dy,dz,filename)
+fr.writeCuboidGridToFile(x,y,z,ngrid,ngrid,ngrid,rho,dx,dy,dz,massunit,distunit,filename)
 
