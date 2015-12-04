@@ -55,11 +55,11 @@ Code Dependencies:
 This repository contains a module which handles most of the I/O and calculation. It
 relies on the following Python modules:
 
-numpy - numpy arrays, sqrt, int and real casting, complex numbers
+`numpy` - numpy arrays, sqrt, int and real casting, complex numbers
 
-datetime - to generate random number seeds from system clock
+`datetime` - to generate random number seeds from system clock
 
-scipy.fftpack - inverse fourier transforms ifft, ifftn
+`scipy.fftpack` - inverse fourier transforms ifft, ifftn
 
 These final three modules are used to check the resulting density distribution
 has a probability density function (PDF) that is lognormal
