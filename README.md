@@ -22,7 +22,7 @@ finally computes a Fourier Transform to create a normalised density distribution
 in configuration space (rho_FFT).  This density distribution is then scaled by the mean
 density to give the true density
 
-rho = rhozero*exp(deltarho*rho_FFT)
+rho = rhozero exp(deltarho rho_FFT)
 
 The deltarho variable is an input parameter which can increase or decrease the magnitude
 of fluctuations in the density distribution.  Given a set of units as input, this 
@@ -31,22 +31,42 @@ density distribution is then written to an ASCII file.
 Input parameters:
 ----------------
 
-fractalD - fractal dimension
+`fractalD` - fractal dimension
 
-deltarho - strength of density fluctuations
+`deltarho` - strength of density fluctuations
 
-rhozero - Mean density in the box
+`rhozero` - Mean density in the box
 
-ngrid - Number of grid cells per dimension (i.e. total ngrid^3)
+`ngrid` - Number of grid cells per dimension (i.e. total ngrid^3)
 
-boxlength - Half length of box in code units (e.g. dimensions (-L,L))
+`boxlength` - Half length of box in code units (e.g. dimensions (-L,L))
 
-seed - random number seed
+`seed` - random number seed
 
-masskey, massunit - string describing mass unit, variable for its value
+`masskey, massunit` - string describing mass unit, variable for its value
 
-distkey, distunit - string describing distance unit, variable for its value
+`distkey, distunit` - string describing distance unit, variable for its value
 
-filename - output filename
+`filename` - output filename
 
+Code Dependencies:
+------------------
+
+This repository contains a module which handles most of the I/O and calculation. It
+relies on the following Python modules:
+
+numpy - numpy arrays, sqrt, int and real casting, complex numbers
+
+datetime - to generate random number seeds from system clock
+
+scipy.fftpack - inverse fourier transforms ifft, ifftn
+
+These final three modules are used to check the resulting density distribution
+has a probability density function (PDF) that is lognormal
+
+`scipy.stats` - to fit the density PDF with a lognormal
+
+`matplotlib.pyplot` - to construct and plot the density PDF
+
+`matplotlib.mlab` - to plot the lognormal fit
 
